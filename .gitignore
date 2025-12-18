@@ -1,0 +1,37 @@
+# Build artifacts
+*.o
+*.obj
+*.exe
+*.out
+*.a
+*.wasm.map
+
+# Test files
+test_*.typ
+test_*.pdf
+example*.pdf
+*.log
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build directory contents (except scripts)
+build-scripts/pikchr.c
+build-scripts/pikchr.h
+build-scripts/pikchr.wasm
+build-scripts/pikchr*.wasm
+build-scripts/*.o
+build-scripts/*.exe
+
+# Emscripten cache
+.emscripten_cache/
+.emscripten_ports/
+
+# Temporary files
+*.tmp
+.cache/
