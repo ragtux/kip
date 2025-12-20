@@ -158,7 +158,6 @@ If you need to rebuild the WASM module (e.g., for updates or modifications), see
 - The plugin is pure (stateless) - each diagram is rendered independently
 - Some very complex Pikchr features might have rendering differences
 - Currently only supports light mode rendering
-- `image.decode` deprecation warning (will be updated for Typst 0.15.0)
 
 ## License
 
