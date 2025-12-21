@@ -19,5 +19,6 @@ exclude = [
   "build-scripts/*.wasm",
   "build-scripts/*.o",
   "test_*",
-  "example*.pdf"
+  "example*.pdf",
+  "/gallery/*"
 ]

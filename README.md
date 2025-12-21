@@ -14,6 +14,57 @@ Pikchr (pronounced like "picture") is a PIC-like markup language for diagrams in
 - ✅ Works in Typst CLI (tested with Typst 0.12+)
 - ✅ Simple, intuitive API
 
+## Examples
+
+<table>
+<tr>
+  <td>
+    <a href="gallery/build-pikchr.typ">
+      <img src="gallery/build-pikchr.png" width="250px">
+    </a>
+  </td>
+  <td>
+    <a href="gallery/sqlite-arch.typ">
+      <img src="gallery/sqlite-arch.png" width="250px">
+    </a>
+  </td>
+  <td>
+    <a href="gallery/swimlanes.typ">
+      <img src="gallery/swimlanes.png" width="250px">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Build Process Flowchart</td>
+  <td>SQLite Architecture</td>
+  <td>Swimlanes Timeline</td>
+</tr>
+<tr>
+  <td>
+    <a href="gallery/syntax-diagram.typ">
+      <img src="gallery/syntax-diagram.png" width="250px">
+    </a>
+  </td>
+  <td>
+    <a href="gallery/version-control.typ">
+      <img src="gallery/version-control.png" width="250px">
+    </a>
+  </td>
+  <td>
+    <a href="gallery/trident.typ">
+      <img src="gallery/trident.png" width="250px">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Syntax Railroad Diagram</td>
+  <td>Version Control Graph</td>
+  <td>Impossible Trident</td>
+</tr>
+</table>
+
+*Click on an example image to see the code. Examples from [pikchr.org](https://pikchr.org).*
+
 ## Installation
 
 ### Option 1: Local Installation
