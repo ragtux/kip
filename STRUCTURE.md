@@ -17,6 +17,7 @@ kip/
 ├── lib.typ               # Main plugin code
 ├── pikchr.wasm           # Compiled WebAssembly module (~125KB)
 ├── example_simple.typ    # Working examples
+├── gallery/              # README gallery (sources + rendered PNGs)
 │
 └── build-scripts/        # Build tools (for WASM recompilation)
     ├── BUILD.md          # Detailed build instructions
@@ -33,7 +34,7 @@ These files are essential for the plugin to function:
 
 - **`lib.typ`** - The main Typst interface (~2KB)
   - Exports `kip()` as the primary function
-  - Provides `pikchr()` and `render()` aliases
+  - Provides `pikchr()` and `render()` aliases, and `render-dark()`
   - Handles raw block and string inputs
   - Converts WASM output to Typst images
 
@@ -109,14 +110,15 @@ The `build-scripts/` directory contains everything needed to rebuild the WASM mo
   - Implements wasm-minimal-protocol
   - Bridges Pikchr C library and Typst
   - Handles input/output conversion
+  - Exports `typst_pikchr` and `typst_pikchr_dark`
 
 ### External Dependencies (Not Included)
 
 To rebuild the WASM module, you'll need to obtain:
 
-- **`pikchr.c`** - Download from [pikchr.org](https://pikchr.org/home/file/pikchr.c)
-  - The main Pikchr library
-  - ~286KB of C code
+- **`pikchr.c`** - Generated from the [Pikchr source tree](https://pikchr.org/home/doc/trunk/doc/download.md)
+  - The main Pikchr library (a build product of `pikchr.y`)
+  - `build.sh` clones the source and generates it automatically
   - Not included to keep repository clean
 
 ## What's NOT Included
@@ -124,7 +126,7 @@ To rebuild the WASM module, you'll need to obtain:
 The following are intentionally excluded from the plugin repository:
 
 ### Pikchr Source Files
-- `pikchr.c` - Download separately from pikchr.org
+- `pikchr.c` - Generated from the Pikchr source tree at build time
 - `pikchr.h` - Generated during pikchr build
 - `pikchr.y` - Grammar file (source for pikchr.c)
 - `lemon.c` - Parser generator
@@ -174,7 +176,7 @@ Total (core files):   ~135KB
 ❌ Don't commit:
 - Generated PDFs
 - Build artifacts (*.o, *.obj)
-- Pikchr source (pikchr.c) - users download separately
+- Pikchr source (pikchr.c, pikchr-src/) - fetched at build time
 - Test files
 - Editor configs
 - Temporary files
@@ -197,7 +199,7 @@ If you're just using the plugin, you only need:
 
 Then import with:
 ```typst
-#import "@local/kip:0.1.0": kip
+#import "@local/kip:0.2.0": kip
 ```
 
 ## For Plugin Developers
@@ -206,9 +208,8 @@ If you're modifying or rebuilding the plugin:
 
 1. Clone the repository
 2. Follow `build-scripts/BUILD.md` to set up build tools
-3. Download `pikchr.c` to `build-scripts/`
-4. Run `build.sh` or `build.bat` to rebuild WASM
-5. Test with `typst compile example_simple.typ`
+3. Run `build.sh` (fetches Pikchr and generates `pikchr.c`) or `build.bat` to rebuild WASM
+4. Test with `typst compile example_simple.typ`
 
 ## Naming
 
@@ -240,7 +241,7 @@ This plugin repository is intentionally kept separate from the Pikchr source cod
 - Respects Pikchr's BSD license while using MIT for wrapper
 
 **Trade-offs:**
-- Need to download pikchr.c separately to rebuild
+- Pikchr source must be fetched to rebuild
 - Must keep pikchr.c version documented
 - Requires external build tools (Emscripten)
 

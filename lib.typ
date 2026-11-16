@@ -5,12 +5,15 @@
 /// Render a Pikchr diagram using Kip
 ///
 /// Takes Pikchr markup text and renders it as an SVG image.
+/// Syntax errors in the markup are reported as compilation errors that
+/// carry Pikchr's own error message.
 ///
 /// Arguments:
 /// - code: The Pikchr markup code as a string or raw block
 /// - width: Optional width for the image (auto by default)
 /// - height: Optional height for the image (auto by default)
 /// - fit: How to fit the image ("contain", "cover", "stretch")
+/// - dark: Invert colors for use on a dark background (false by default)
 ///
 /// Example:
 /// ```typst
@@ -29,6 +32,7 @@
   width: auto,
   height: auto,
   fit: "contain",
+  dark: false,
 ) = {
   // Convert the code to string then bytes
   // Handle both string and content (raw blocks) inputs
@@ -45,7 +49,11 @@
 
   // Call the WASM plugin to render the diagram
   // The plugin returns SVG as bytes
-  let svg-bytes = pikchr-plugin.typst_pikchr(input)
+  let svg-bytes = if dark {
+    pikchr-plugin.typst_pikchr_dark(input)
+  } else {
+    pikchr-plugin.typst_pikchr(input)
+  }
 
   // Create image from SVG bytes and apply sizing and fit parameters
   if width != auto or height != auto {
@@ -65,15 +73,7 @@
 
 /// Render a Pikchr diagram in dark mode
 ///
-/// Same as kip() but optimized for dark backgrounds
-#let render-dark(
-  code,
-  width: auto,
-  height: auto,
-  fit: "contain",
-) = {
-  // Note: Dark mode would require passing a flag to the WASM plugin
-  // For now, this is a placeholder that calls the regular kip
-  // To implement: modify pikchr_wasm.c to accept flags
-  kip(code, width: width, height: height, fit: fit)
-}
+/// Same as `kip(..., dark: true)`: colors are inverted so that the default
+/// black lines and text become white. The diagram has no background of its
+/// own, so place it on a dark page or block.
+#let render-dark = kip.with(dark: true)
