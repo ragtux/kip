@@ -4,7 +4,15 @@ Get started with **Kip**, the Pikchr plugin for Typst, in 5 minutes!
 
 ## 1. Install the Plugin
 
-### Option A: Direct Use (Fastest)
+### Option A: Typst Universe (Fastest)
+
+Nothing to install - just import it:
+
+```typst
+#import "@preview/kip:0.2.0": kip
+```
+
+### Option B: Direct Use
 
 Place the `kip` directory next to your Typst document:
 
@@ -17,19 +25,19 @@ your-project/
 └── your-document.typ
 ```
 
-### Option B: System Installation
+### Option C: System Installation
 
 Copy to your Typst packages directory:
 
 **Windows:**
 ```powershell
-xcopy /E /I kip "%APPDATA%\typst\packages\local\kip\0.1.0"
+xcopy /E /I kip "%APPDATA%\typst\packages\local\kip\0.2.0"
 ```
 
 **Linux/Mac:**
 ```bash
-mkdir -p ~/.local/share/typst/packages/local/kip/0.1.0
-cp -r kip/* ~/.local/share/typst/packages/local/kip/0.1.0/
+mkdir -p ~/.local/share/typst/packages/local/kip/0.2.0
+cp -r kip/* ~/.local/share/typst/packages/local/kip/0.2.0/
 ```
 
 ## 2. Create Your First Diagram
@@ -37,11 +45,14 @@ cp -r kip/* ~/.local/share/typst/packages/local/kip/0.1.0/
 Create a file `test.typ`:
 
 ```typst
-// Option A: Direct import (if plugin is next to your file)
-#import "kip/lib.typ": kip
+// Option A: From Typst Universe
+#import "@preview/kip:0.2.0": kip
 
-// Option B: System import (if installed to packages directory)
-// #import "@local/kip:0.1.0": kip
+// Option B: Direct import (if plugin is next to your file)
+// #import "kip/lib.typ": kip
+
+// Option C: System import (if installed to packages directory)
+// #import "@local/kip:0.2.0": kip
 
 = My First Kip Diagram
 
@@ -123,6 +134,12 @@ arrow right 200% "Response"
 )
 ```
 
+### Dark Mode
+
+```typst
+#block(fill: black, inset: 10pt, kip(dark: true, "box \"Dark\""))
+```
+
 ### Using Strings
 
 ```typst
@@ -134,7 +151,7 @@ arrow right 200% "Response"
 You can use any of these - they all work the same:
 
 ```typst
-#import "@local/kip:0.1.0": kip, pikchr, render
+#import "@local/kip:0.2.0": kip, pikchr, render
 
 #kip("box \"A\"")      // Primary name
 #pikchr("box \"B\"")   // Familiar to Pikchr users
@@ -155,8 +172,9 @@ This is just a warning, not an error. Install the font or use a different one:
 #set text(font: "Arial")  // or any font you have
 ```
 
-### "failed to parse SVG"
-Make sure you're using the latest `pikchr.wasm` file from this package.
+### "plugin errored with: ..."
+Your Pikchr markup has a syntax error. The message shows the offending line
+with a `^` marker under the token Pikchr could not understand.
 
 ### "cannot find definition for import"
 The WASM file has WASI dependencies. Use the pre-compiled `pikchr.wasm` from this package, or rebuild following [build-scripts/BUILD.md](build-scripts/BUILD.md).

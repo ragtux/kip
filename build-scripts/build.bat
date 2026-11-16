@@ -4,7 +4,7 @@ REM
 REM Prerequisites:
 REM - Emscripten SDK (emcc)
 REM - wasi-stub (cargo install wasi-stub)
-REM - pikchr.c (download from pikchr.org)
+REM - pikchr.c (generate it by running "make pikchr.c" in the Pikchr source tree)
 
 setlocal enabledelayedexpansion
 
@@ -39,7 +39,9 @@ REM Check for pikchr.c
 echo Checking for pikchr.c...
 if not exist "pikchr.c" (
     echo [X] Error: pikchr.c not found in current directory
-    echo Download from: https://pikchr.org/home/file/pikchr.c
+    echo pikchr.c is a build product. Get the Pikchr source tree from
+    echo   https://pikchr.org/home/rchvdwnld/trunk
+    echo run "make pikchr.c" there and copy pikchr.c into this directory.
     exit /b 1
 )
 echo [OK] pikchr.c found
@@ -67,7 +69,7 @@ emcc pikchr.c pikchr_wasm.c ^
   -O3 ^
   --no-entry ^
   -s WASM=1 ^
-  -s EXPORTED_FUNCTIONS="['_typst_pikchr']" ^
+  -s EXPORTED_FUNCTIONS="['_typst_pikchr','_typst_pikchr_dark']" ^
   -s ALLOW_MEMORY_GROWTH=1 ^
   -s STANDALONE_WASM=1 ^
   -s ERROR_ON_UNDEFINED_SYMBOLS=0 ^
@@ -82,7 +84,7 @@ echo [OK] Compilation successful
 REM Stub WASI functions
 echo.
 echo Stubbing WASI functions...
-wasi-stub --stub-function env:emscripten_notify_memory_growth pikchr.wasm
+wasi-stub --stub-module wasi_snapshot_preview1 --stub-function env:emscripten_notify_memory_growth pikchr.wasm
 
 if %ERRORLEVEL% NEQ 0 (
     echo [X] Stubbing failed

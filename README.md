@@ -11,7 +11,9 @@ Pikchr (pronounced like "picture") is a PIC-like markup language for diagrams in
 - ✅ Render Pikchr diagrams as SVG directly in Typst
 - ✅ No external dependencies - uses WebAssembly plugin
 - ✅ Fast and lightweight (~125KB WASM module)
-- ✅ Works in Typst CLI (tested with Typst 0.12+)
+- ✅ Works with Typst 0.13 and later
+- ✅ Dark mode rendering
+- ✅ Pikchr syntax errors reported as readable Typst errors
 - ✅ Simple, intuitive API
 
 ## Examples
@@ -70,16 +72,16 @@ Pikchr (pronounced like "picture") is a PIC-like markup language for diagrams in
 Import the package from the official Typst package registry:
 
 ```typst
-#import "@preview/kip:0.1.0": kip
+#import "@preview/kip:0.2.0": kip
 ```
 
 ### Alternative: Local Installation
 
 1. Download or clone this package
 2. Place it in your Typst local packages directory:
-   - **Windows**: `%APPDATA%\typst\packages\local\kip\0.1.0\`
-   - **macOS**: `~/Library/Application Support/typst/packages/local/kip/0.1.0/`
-   - **Linux**: `~/.local/share/typst/packages/local/kip/0.1.0/`
+   - **Windows**: `%APPDATA%\typst\packages\local\kip\0.2.0\`
+   - **macOS**: `~/Library/Application Support/typst/packages/local/kip/0.2.0/`
+   - **Linux**: `~/.local/share/typst/packages/local/kip/0.2.0/`
 
 ### Alternative: Direct Import
 
@@ -94,7 +96,7 @@ Place this directory next to your Typst document and import it directly:
 ### Basic Example
 
 ```typst
-#import "@preview/kip:0.1.0": kip
+#import "@preview/kip:0.2.0": kip
 
 #kip(```
 box "Start"
@@ -116,6 +118,20 @@ circle "End" fit
   "arrow right 200% \n box \"Process\" fit \n arrow right 200%",
   width: 400pt
 )
+```
+
+### Dark Mode
+
+Pass `dark: true` to invert the colors for dark backgrounds (default black
+lines and text become white). The diagram has no background of its own, so
+put it on a dark page or block:
+
+```typst
+#block(fill: rgb("#1e1e2e"), inset: 12pt, kip(dark: true, ```
+box "Start"
+arrow
+circle "End" fit
+```))
 ```
 
 ## Examples
@@ -168,7 +184,7 @@ box "Database" width 3cm fill lightblue fit
 
 ## API Reference
 
-### `kip(code, width: auto, height: auto, fit: "contain")`
+### `kip(code, width: auto, height: auto, fit: "contain", dark: false)`
 
 Renders a Pikchr diagram from the provided markup code.
 
@@ -177,8 +193,16 @@ Renders a Pikchr diagram from the provided markup code.
 - `width` (length, auto): Optional width constraint
 - `height` (length, auto): Optional height constraint
 - `fit` (string): How to fit the image ("contain", "cover", "stretch")
+- `dark` (bool): Invert colors for dark backgrounds
 
 **Returns:** An image element containing the rendered diagram
+
+If the markup contains a syntax error, compilation fails with Pikchr's error
+message pointing at the offending token.
+
+### `render-dark(code, ..)`
+
+Shorthand for `kip(code, dark: true, ..)`.
 
 ### Aliases
 
@@ -188,7 +212,7 @@ For backwards compatibility and convenience:
 
 All three functions work identically:
 ```typst
-#import "@preview/kip:0.1.0": kip, pikchr, render
+#import "@preview/kip:0.2.0": kip, pikchr, render
 
 #kip("box \"A\"")      // Primary function
 #pikchr("box \"B\"")   // Alias
@@ -212,7 +236,6 @@ If you need to rebuild the WASM module (e.g., for updates or modifications), see
 
 - The plugin is pure (stateless) - each diagram is rendered independently
 - Some very complex Pikchr features might have rendering differences
-- Currently only supports light mode rendering
 
 ## License
 

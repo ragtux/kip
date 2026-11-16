@@ -1,4 +1,4 @@
-#import "@preview/kip:0.1.0": kip
+#import "@preview/kip:0.2.0": kip
 
 #set page(width: auto, height: auto, margin: 1cm)
 

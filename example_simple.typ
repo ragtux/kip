@@ -40,4 +40,12 @@ arrow right 150% "finish" above
 circle "Done" fit
 ```)
 
+== Dark Mode
+
+#block(fill: rgb("#1e1e2e"), inset: 12pt, radius: 4pt, kip(dark: true, ```
+box "Dark"
+arrow
+circle "Mode" fit
+```))
+
 Success! The Kip plugin for Typst is working correctly.

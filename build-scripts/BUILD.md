@@ -6,30 +6,43 @@ This guide explains how to rebuild the `pikchr.wasm` module from source.
 
 You'll need:
 
-1. **Pikchr Source Code** - Download from [pikchr.org](https://pikchr.org) or clone from the [Fossil repository](https://pikchr.org/home/timeline)
+1. **Pikchr Source Code** - `build.sh` clones it for you (needs `git` and a native C compiler); see [Step 3](#step-3-get-pikchr-source) to do it by hand
 2. **Emscripten SDK** - For compiling C to WebAssembly
 3. **Rust and Cargo** - For the `wasi-stub` tool (to remove WASI dependencies)
 
 ## Quick Build (Recommended)
 
-If you already have the prerequisites installed:
+If you already have the prerequisites installed, just run the script. It
+fetches Pikchr, generates `pikchr.c`, compiles, stubs and installs
+`../pikchr.wasm`:
 
 ```bash
-# 1. Get pikchr source
-# Download pikchr.c from https://pikchr.org/home/file/pikchr.c
+./build.sh
+```
+
+On NixOS / with Nix, everything except `wasi-stub` comes from one shell:
+
+```bash
+nix shell nixpkgs#emscripten nixpkgs#gcc -c ./build.sh
+```
+
+The manual equivalent:
+
+```bash
+# 1. Get pikchr source and generate pikchr.c (see Step 3)
 
 # 2. Compile to WASM with Emscripten
 emcc pikchr.c pikchr_wasm.c \
   -O3 --no-entry \
   -s WASM=1 \
-  -s EXPORTED_FUNCTIONS="['_typst_pikchr']" \
+  -s EXPORTED_FUNCTIONS="['_typst_pikchr','_typst_pikchr_dark']" \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s STANDALONE_WASM=1 \
   -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
   -o pikchr.wasm
 
 # 3. Stub WASI functions
-wasi-stub --stub-function env:emscripten_notify_memory_growth pikchr.wasm
+wasi-stub --stub-module wasi_snapshot_preview1 --stub-function env:emscripten_notify_memory_growth pikchr.wasm
 
 # 4. Copy to plugin directory
 cp "pikchr - stubbed.wasm" ../pikchr.wasm
@@ -80,15 +93,20 @@ cargo install --git https://github.com/astrale-sharp/wasm-minimal-protocol wasi-
 
 ### Step 3: Get Pikchr Source
 
-Download the pikchr.c file:
+`pikchr.c` is a build product: it is no longer available as a direct
+download and must be generated from the Pikchr source tree with the bundled
+Lemon parser generator. `build.sh` does this automatically when
+`build-scripts/pikchr.c` does not exist (delete the file to pick up a newer
+Pikchr). To do it by hand:
 
 ```bash
-# Option 1: Direct download
-curl -o pikchr.c https://pikchr.org/home/file/pikchr.c
+# Get the source tree (GitHub mirror of the Fossil repository;
+# a tarball is also available at https://pikchr.org/home/rchvdwnld/trunk)
+git clone --depth 1 https://github.com/drhsqlite/pikchr.git pikchr-src
 
-# Option 2: Clone the entire repository
-git clone https://github.com/drhsql/pikchr.git
-# Note: pikchr.c needs to be generated from pikchr.y using lemon parser generator
+# Generate pikchr.c and copy it next to pikchr_wasm.c
+make -C pikchr-src pikchr.c
+cp pikchr-src/pikchr.c .
 ```
 
 ### Step 4: Build the WASM Module
@@ -101,14 +119,14 @@ emcc pikchr.c pikchr_wasm.c \
   -O3 \
   --no-entry \
   -s WASM=1 \
-  -s EXPORTED_FUNCTIONS="['_typst_pikchr']" \
+  -s EXPORTED_FUNCTIONS="['_typst_pikchr','_typst_pikchr_dark']" \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s STANDALONE_WASM=1 \
   -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
   -o pikchr.wasm
 
 # Stub WASI imports to make it compatible with Typst
-wasi-stub --stub-function env:emscripten_notify_memory_growth pikchr.wasm
+wasi-stub --stub-module wasi_snapshot_preview1 --stub-function env:emscripten_notify_memory_growth pikchr.wasm
 
 # The stubbed file will be named "pikchr - stubbed.wasm"
 # Copy it to replace the original in the plugin directory
@@ -128,9 +146,10 @@ typst compile example_simple.typ
 ls -lh example_simple.pdf
 ```
 
-## Build Script (Optional)
+## Build Script
 
-Create a `build.sh` script for easier rebuilding:
+`build.sh` (and `build.bat` on Windows, which expects an existing
+`pikchr.c`) automates the steps above. Its core is:
 
 ```bash
 #!/bin/bash
@@ -147,7 +166,7 @@ echo "Compiling with Emscripten..."
 emcc pikchr.c pikchr_wasm.c \
   -O3 --no-entry \
   -s WASM=1 \
-  -s EXPORTED_FUNCTIONS="['_typst_pikchr']" \
+  -s EXPORTED_FUNCTIONS="['_typst_pikchr','_typst_pikchr_dark']" \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s STANDALONE_WASM=1 \
   -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
@@ -155,7 +174,7 @@ emcc pikchr.c pikchr_wasm.c \
 
 # Stub WASI functions
 echo "Stubbing WASI functions..."
-wasi-stub --stub-function env:emscripten_notify_memory_growth pikchr.wasm
+wasi-stub --stub-module wasi_snapshot_preview1 --stub-function env:emscripten_notify_memory_growth pikchr.wasm
 
 # Copy to plugin directory
 echo "Installing to plugin directory..."
@@ -192,6 +211,12 @@ The stubbed functions:
 1. **Input**: Takes Pikchr markup as a byte buffer (with length parameter)
 2. **Processing**: Calls the pikchr() C function to generate SVG
 3. **Output**: Returns SVG as bytes using the wasm-minimal-protocol
+4. **Errors**: On a syntax error, returns Pikchr's plain-text error message
+   with a non-zero status, which Typst reports as a compilation error
+
+Exported functions:
+- `typst_pikchr` - normal rendering
+- `typst_pikchr_dark` - rendering with `PIKCHR_DARK_MODE` (inverted colors)
 
 Key protocol functions:
 - `wasm_minimal_protocol_write_args_to_buffer()` - Receives input from Typst
@@ -212,7 +237,7 @@ cargo install --git https://github.com/astrale-sharp/wasm-minimal-protocol wasi-
 ```
 
 ### "cannot find definition for import..."
-This means WASI functions weren't properly stubbed. Make sure you ran the wasi-stub command and copied the stubbed output.
+This means WASI functions weren't properly stubbed. Make sure you ran the wasi-stub command and copied the stubbed output. With wasi-stub 0.3+, passing `--stub-function` turns off the default stubbing of the `wasi_snapshot_preview1` module, so `--stub-module wasi_snapshot_preview1` must be given explicitly (as in the commands above).
 
 ### Build succeeds but Typst gives "failed to parse SVG"
 Check that:
@@ -222,7 +247,7 @@ Check that:
 
 ## References
 
-- [Pikchr Source](https://pikchr.org/home/file/pikchr.c)
+- [Pikchr Download Options](https://pikchr.org/home/doc/trunk/doc/download.md)
 - [Emscripten Documentation](https://emscripten.org/docs/getting_started/downloads.html)
 - [wasm-minimal-protocol](https://github.com/astrale-sharp/wasm-minimal-protocol)
 - [Typst Plugin Documentation](https://typst.app/docs/reference/foundations/plugin/)
@@ -232,5 +257,5 @@ Check that:
 
 - **Emscripten**: Tested with 3.1.46 and 4.0.21
 - **Pikchr**: Compatible with latest version from pikchr.org
-- **Typst**: Tested with 0.12.0+
+- **Typst**: Requires 0.13.0+
 - **wasi-stub**: 0.2.0+

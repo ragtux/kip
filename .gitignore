@@ -35,3 +35,4 @@ build-scripts/*.exe
 # Temporary files
 *.tmp
 .cache/
+build-scripts/pikchr-src/
